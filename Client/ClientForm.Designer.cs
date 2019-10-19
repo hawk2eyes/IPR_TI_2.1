@@ -28,13 +28,36 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.lblClientMessage = new System.Windows.Forms.Label();
+            this.SuspendLayout();
+            // 
+            // lblClientMessage
+            // 
+            this.lblClientMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblClientMessage.AutoSize = true;
+            this.lblClientMessage.Location = new System.Drawing.Point(200, 100);
+            this.lblClientMessage.Name = "lblClientMessage";
+            this.lblClientMessage.Size = new System.Drawing.Size(100, 17);
+            this.lblClientMessage.TabIndex = 0;
+            this.lblClientMessage.Text = "ClientMessage";
+            // 
+            // ClientForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(482, 253);
+            this.Controls.Add(this.lblClientMessage);
+            this.Name = "ClientForm";
             this.Text = "Form1";
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion
+
+        private System.Windows.Forms.Label lblClientMessage;
     }
 }
-

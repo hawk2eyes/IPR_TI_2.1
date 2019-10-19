@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Client;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,69 +13,27 @@ namespace Doctor
 {
     public partial class DoctorForm : Form
     {
-        private int port;
-        private string name;
-        private TcpClient client;
-
-        private static NetworkStream stream;
-        private static byte[] buffer = new byte[1024];
-        static string totalBuffer = "";
-
         public DoctorForm()
         {
             InitializeComponent();
-            ConnectServer();
         }
 
-        private void ConnectServer()
+        public void DoctorForm_Load(object sender, EventArgs e)
         {
-            client = new TcpClient();
-            client.Connect("localhost", this.port);
-
-            stream = client.GetStream();
-            stream.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(OnRead), null);
-            Send($"start\r\n\r\n");
-            
+            cmbbGender.SelectedIndex = 0;
         }
 
-        private static void Send(string v)
+        private void BtnStartTest_Click(object sender, EventArgs e)
         {
-            stream.Write(System.Text.Encoding.ASCII.GetBytes(v), 0, v.Length);
-            stream.Flush();
-        }
-
-        private void OnRead(IAsyncResult ar)
-        {
-            //message received
-            Console.WriteLine($"client: {name} got data");
-            int receivedBytes = stream.EndRead(ar);
-            totalBuffer += System.Text.Encoding.ASCII.GetString(buffer, 0, receivedBytes);
-
-            // from bytes to string
-            while (totalBuffer.Contains("\r\n\r\n"))
+            if (tbAge.Text == "" || tbWeight.Text == "" || tbName.Text == "" || cmbbGender.Text == "")
             {
-                string packet = totalBuffer.Substring(0, totalBuffer.IndexOf("\r\n\r\n"));
-                totalBuffer = totalBuffer.Substring(totalBuffer.IndexOf("\r\n\r\n") + 4);
-
-                string[] data = Regex.Split(packet, "\r\n");
-
-                handlePacket(data);
+                lblWrongData.Visible = true;
             }
-
-            // begin waiting for next 
-            stream.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(OnRead), null);
-        }
-
-        private async void handlePacket(string[] data)
-        {
-            switch (data[0])
+            else
             {
-                default:
-                    Console.WriteLine("Unknown package");
-                    break;
+                ClientForm client = new ClientForm();
+                client.Show();
             }
-
         }
-
     }
 }

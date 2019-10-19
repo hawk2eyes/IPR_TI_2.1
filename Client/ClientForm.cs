@@ -4,9 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,71 +12,35 @@ namespace Client
 {
     public partial class ClientForm : Form
     {
-
-
-        private int port;
-        private string name;
-        private TcpClient client;
-
-        private static NetworkStream stream;
-        private static byte[] buffer = new byte[1024];
-        static string totalBuffer = "";
+        private int timer;
 
         public ClientForm()
         {
             InitializeComponent();
-            ConnectServer();
+            SetDefaultValues();
 
+            this.timer = new int();
         }
 
-        private void ConnectServer()
+        private void SetDefaultValues()
         {
-            client = new TcpClient();
-            client.Connect("localhost", this.port);
-
-            stream = client.GetStream();
-            stream.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(OnRead), null);
-            Send($"start\r\n\r\n");
-
+            lblClientMessage.Text = "De deskundige is de test aan het starten";
         }
 
-        private static void Send(string v)
+        public void ChangeClientMessage()
         {
-            stream.Write(System.Text.Encoding.ASCII.GetBytes(v), 0, v.Length);
-            stream.Flush();
-        }
-
-        private void OnRead(IAsyncResult ar)
-        {
-            //message received
-            Console.WriteLine($"client: {name} got data");
-            int receivedBytes = stream.EndRead(ar);
-            totalBuffer += System.Text.Encoding.ASCII.GetString(buffer, 0, receivedBytes);
-
-            // from bytes to string
-            while (totalBuffer.Contains("\r\n\r\n"))
+            if (timer == 0)
             {
-                string packet = totalBuffer.Substring(0, totalBuffer.IndexOf("\r\n\r\n"));
-                totalBuffer = totalBuffer.Substring(totalBuffer.IndexOf("\r\n\r\n") + 4);
-
-                string[] data = Regex.Split(packet, "\r\n");
-
-                handlePacket(data);
+                lblClientMessage.Text = "U mag beginnen met fietsen, er is een 2 min lange warmup";
             }
-
-            // begin waiting for next 
-            stream.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(OnRead), null);
-        }
-
-        private async void handlePacket(string[] data)
-        {
-            switch (data[0])
+            if (timer == 120)
             {
-                default:
-                    Console.WriteLine("Unknown package");
-                    break;
+                lblClientMessage.Text = "Nu begint de test, deze test duurt 4 min" + "\r\n" + "probeer 60 omwentellingen per mininuut aan te houden";
             }
-
+            if (timer == 360)
+            {
+                lblClientMessage.Text = "De test is afgelopen, nu is er een cooling down, deze duurt 1 min";
+            }
         }
     }
 }
