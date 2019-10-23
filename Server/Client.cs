@@ -50,6 +50,9 @@ namespace Server
         {
             switch (data[0])
             {
+                case "Test/login":
+                    Console.WriteLine($"{data[1]} logged in");
+                    break;
                 default:
                     Console.WriteLine("Unknown packet");
                     Write("Unknown packet\r\n\r\n");
