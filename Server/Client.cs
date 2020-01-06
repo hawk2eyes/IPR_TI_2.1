@@ -7,6 +7,8 @@ namespace Server
 {
     class Client
     {
+        private string name;
+
         private TcpClient tcpClient;
         private Program program;
         private NetworkStream stream;
@@ -52,6 +54,13 @@ namespace Server
             {
                 case "Test/login":
                     Console.WriteLine($"{data[1]} logged in");
+                    this.name = data[1];
+                    break;
+                case "Test/Connected":
+                    Console.WriteLine($"{name} is connected to {data[1]}");
+                    break;
+                case "Test/BikeData":
+                    Console.WriteLine($"{data[1]}");
                     break;
                 default:
                     Console.WriteLine("Unknown packet");

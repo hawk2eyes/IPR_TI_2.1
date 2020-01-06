@@ -118,7 +118,7 @@
             // 
             // StartBttn
             // 
-            this.StartBttn.BackColor = System.Drawing.Color.YellowGreen;
+            this.StartBttn.BackColor = System.Drawing.Color.LimeGreen;
             this.StartBttn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.StartBttn.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.StartBttn.Location = new System.Drawing.Point(394, 68);
@@ -219,7 +219,7 @@
             // 
             this.DoneMessageLabel.AutoSize = true;
             this.DoneMessageLabel.Font = new System.Drawing.Font("Microsoft YaHei UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DoneMessageLabel.Location = new System.Drawing.Point(16, 302);
+            this.DoneMessageLabel.Location = new System.Drawing.Point(15, 304);
             this.DoneMessageLabel.Name = "DoneMessageLabel";
             this.DoneMessageLabel.Size = new System.Drawing.Size(170, 22);
             this.DoneMessageLabel.TabIndex = 27;

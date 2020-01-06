@@ -1,6 +1,7 @@
 ﻿using Avans.TI.BLE;
 using ClientGUI.Bluetooth;
 using LiveCharts;
+using LiveCharts.Defaults;
 using LiveCharts.Wpf;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace Client
         private static byte[] buffer = new byte[1024];
         static string totalBuffer = "";
 
-        public ClientRunTest( Patient patient)
+        public ClientRunTest(Patient patient)
         {
             this.patient = patient;
             InitializeComponent();
@@ -50,14 +51,60 @@ namespace Client
             resistanceChart.To = 100;
             StartBttn.Enabled = false;
 
+            dataChart.AxisY.Add(new Axis
+            {
+                Foreground = System.Windows.Media.Brushes.Red,
+                Title = "BPM"
+            });
+
+            dataChart.AxisY.Add(new Axis
+            {
+                Foreground = System.Windows.Media.Brushes.DodgerBlue,
+                Title = "Rotations per minute",
+                Position = AxisPosition.RightTop
+            });
+
+            dataChart.Series = new SeriesCollection
+            {
+                new LineSeries
+                {
+                    Values = new ChartValues<ObservablePoint>
+                    {
+                        new ObservablePoint(0,10),      
+                        new ObservablePoint(4,7),      
+                        new ObservablePoint(5,3),     
+                        new ObservablePoint(7,6),
+                        new ObservablePoint(10,8)
+                    },
+                    PointGeometrySize = 25
+                },
+                new LineSeries
+                {
+                    Values = new ChartValues<ObservablePoint>
+                    {
+                        new ObservablePoint(0,2),      
+                        new ObservablePoint(2,5),     
+                        new ObservablePoint(3,6),    
+                        new ObservablePoint(6,8),
+                        new ObservablePoint(10,5)
+                    },
+                    PointGeometrySize = 15
+                },
+
+            };
         }
 
-        private void getData()
+        private async void getData()
         {
-            //bleBikeList.Add(bleBikeHandler.bikeData);
+            await bleBikeHandler.DataAsync();
+            bleBikeList.Add(bleBikeHandler.bikeData);
             //bleHeartList.Add(bleHeartHandler.heartData);
             //resistanceChart.Value = bleBikeHandler.percent;
             resistanceChart.Value = random.Next(0, 100);
+            Send($"Test/BikeData\r\n{bleBikeHandler.bikeData}\r\n\r\n");
+            ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
+
+
         }
 
         private void ConnectServer()
@@ -129,7 +176,8 @@ namespace Client
             if (selectBike.SelectedItem != null)
             {
                 //bleHeartHandler.Connect("Decathlon Dual HR", "Heartrate");
-                //bleBikeHandler.Connect(selectBike.SelectedItem.ToString(), "6e40fec1-b5a3-f393-e0a9-e50e24dcca9e");                
+                bleBikeHandler.Connect(selectBike.SelectedItem.ToString(), "6e40fec1-b5a3-f393-e0a9-e50e24dcca9e"); 
+                
                 ConnectBttn.Enabled = false;
                 selectBike.Enabled = false;
                 connectStateLabel.Text = "Verbonden!";
@@ -138,6 +186,8 @@ namespace Client
                 connectStateLabel.BackColor = SystemColors.ControlLight;
 
                 StartBttn.Enabled = true;
+
+                Send($"Test/Connected\r\n{selectBike.SelectedItem.ToString()}\r\n\r\n");
 
             }
             else
@@ -175,29 +225,24 @@ namespace Client
         private void CheckFase()
         {
             int seconds = time;
-            if ( seconds < 120 && seconds % 20 == 0)
+            if (seconds < 120)
             {
                 state = 0;
-                ChatLogListView.Items.Add("Warming up...");
+
+                getData();
             }
-            if ( seconds >= 120 && seconds < 360)
+            if (seconds >= 120 && seconds < 360)
             {
                 state = 1;
-                if ( seconds % 20 == 0)
-                {
-                    ChatLogListView.Items.Add("Running test...");
-
-                }
-
+                
                 getData();
 
             }
-            if (seconds == 420)
+            if (seconds == 360)
             {
                 state = 2;
-                ChatLogListView.Items.Add("Cooling down...");
             }
-            if ( seconds == 480)
+            if (seconds == 420)
             {
                 running = false;
                 timer.Stop();
@@ -215,6 +260,7 @@ namespace Client
             timer.Start();
             ChatLogListView.Items.Add("Warming up...");
             running = true;
+            StartBttn.Enabled = false;
 
         }
 
