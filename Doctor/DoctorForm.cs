@@ -75,8 +75,6 @@ namespace Doctor
                     Console.WriteLine("Unknown package");
                     break;
             }
-
         }
-
     }
 }

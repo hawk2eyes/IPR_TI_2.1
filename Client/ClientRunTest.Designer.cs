@@ -136,6 +136,7 @@
             this.resistanceChart.Size = new System.Drawing.Size(179, 145);
             this.resistanceChart.TabIndex = 18;
             this.resistanceChart.Text = "solidGauge1";
+            this.resistanceChart.ChildChanged += new System.EventHandler<System.Windows.Forms.Integration.ChildChangedEventArgs>(this.resistanceChart_ChildChanged);
             // 
             // label2
             // 

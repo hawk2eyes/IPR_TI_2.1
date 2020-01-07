@@ -29,7 +29,7 @@ namespace Client
                 ClientRunTest runTest = new ClientRunTest(new Patient(NameTextBox.Text,
                                                                     AgeBar.Value,
                                                                     WeightBar.Value,
-                                                                    this.gender));
+                                                                    gender));
                 runTest.Show();
                 this.Hide();
             }

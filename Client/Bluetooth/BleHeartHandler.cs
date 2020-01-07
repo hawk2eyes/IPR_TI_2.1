@@ -44,8 +44,7 @@ namespace ClientGUI.Bluetooth
             byte[] receivedDataSubset = e.Data;
             if (e.Data.Length == 6)
             {
-                heartData = ($"{receivedDataSubset[1]}");
-                
+                heartData = ($"{receivedDataSubset[1]}");                
             }
         }
         
@@ -53,7 +52,6 @@ namespace ClientGUI.Bluetooth
         {
             return heartData;
         }
-
         public async void Connect(string deviceName, string serviceName)
         {
             int errorCode = 0;

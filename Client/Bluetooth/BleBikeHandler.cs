@@ -12,6 +12,7 @@ namespace ClientGUI.Bluetooth
     {
         public BLE bleBike { get; private set; }
         public string bikeData { get; set; }
+        public string bikeDataRPM { get; set; }
 
         public event SubscriptionHandler SubscriptionValueChanged;
         public delegate void SubscriptionHandler(BLESubscriptionValueChangedEventArgs args);      
@@ -71,15 +72,24 @@ namespace ClientGUI.Bluetooth
 
         private void BleBike_SubscriptionValueChanged(object sender, BLESubscriptionValueChangedEventArgs e)
         {
-            
             if (e.Data[4] == 0x19)
             {
                 bikeData = $"{e.Data[6]}";
-                int instandpowerLSB = e.Data[5];
-                int instandpowerMSB = e.Data[6];
-                int work1 = (((instandpowerMSB | 0b11110000) ^ 0b11110000) << 8) | instandpowerLSB;
-                workload = (int) (work1 * 6.1182972778676);
+                bikeDataRPM = $"{e.Data[2]}";
+                int updateEventCount = e.Data[1]; // Update Event Count.
+                int instanteousCadence = e.Data[2]; // Rounds Per Minute.
+                byte accumulatedPowerLSB = e.Data[3]; // Least Significant Bit.
+                byte accumulatedPowerMSB = e.Data[4]; // Most Significant Bit.
+                byte instanteousPowerLSB = e.Data[5]; // Least Significant Bit.
+                byte instanteousPowerMSB = e.Data[6]; // Most Significant Bit.
+                int work1 = (((instanteousPowerMSB | 0b11110000) ^ 0b11110000) << 8) | instanteousPowerLSB;
+                workload = (int)(work1 * 6.1182972778676);
 
+                int accumulatedPower = (accumulatedPowerMSB << 8) | accumulatedPowerLSB; // totale Watt 
+                int instanteousPower = (((instanteousPowerMSB | 0b11110000) ^ 0b11110000) << 8) | instanteousPowerLSB; // Watt per sec
+
+                double[] data = { updateEventCount, instanteousCadence, accumulatedPower, instanteousPower };
+               
             }
         }
         public async void Connect(string deviceName, string serviceName)
@@ -110,7 +120,7 @@ namespace ClientGUI.Bluetooth
                 output[11] = resistance;
                 output[12] = 0xFF;
                 await this.bleBike.WriteCharacteristic("6e40fec3-b5a3-f393-e0a9-e50e24dcca9e", output);
-        } 
+        }
     }
 
     public class DataReceivedArgs : EventArgs

@@ -35,16 +35,19 @@ namespace Client
         private static NetworkStream stream;
         private static byte[] buffer = new byte[1024];
         static string totalBuffer = "";
+        private ChartValues<ObservableValue> Hearthrate;
+        private ChartValues<ObservableValue> RMP;
 
         public ClientRunTest(Patient patient)
         {
             this.patient = patient;
+            this.Hearthrate = new ChartValues<ObservableValue>();
+            this.RMP = new ChartValues<ObservableValue>();
             InitializeComponent();
             ConnectServer();
             InitializeDeclarations();
             LoadBikes();
         }
-
 
         private void ClientRunTest_Load(object sender, EventArgs e)
         {
@@ -68,26 +71,12 @@ namespace Client
             {
                 new LineSeries
                 {
-                    Values = new ChartValues<ObservablePoint>
-                    {
-                        new ObservablePoint(0,10),      
-                        new ObservablePoint(4,7),      
-                        new ObservablePoint(5,3),     
-                        new ObservablePoint(7,6),
-                        new ObservablePoint(10,8)
-                    },
-                    PointGeometrySize = 25
+                    Values = Hearthrate,              
+                    PointGeometrySize = 15
                 },
                 new LineSeries
                 {
-                    Values = new ChartValues<ObservablePoint>
-                    {
-                        new ObservablePoint(0,2),      
-                        new ObservablePoint(2,5),     
-                        new ObservablePoint(3,6),    
-                        new ObservablePoint(6,8),
-                        new ObservablePoint(10,5)
-                    },
+                    Values = RMP,
                     PointGeometrySize = 15
                 },
 
@@ -97,13 +86,18 @@ namespace Client
         private async void getData()
         {
             await bleBikeHandler.DataAsync();
-            bleBikeList.Add(bleBikeHandler.bikeData);
-            //bleHeartList.Add(bleHeartHandler.heartData);
-            //resistanceChart.Value = bleBikeHandler.percent;
+            //bleBikeList.Add(bleBikeHandler.bikeData);
+            bleBikeList.Add(bleBikeHandler.bikeDataRPM);
+            if (bleHeartHandler.heartData != null) 
+            {
+                bleHeartList.Add(bleHeartHandler.heartData);
+            }
+            resistanceChart.Value = bleBikeHandler.percent;
             resistanceChart.Value = random.Next(0, 100);
-            Send($"Test/BikeData\r\n{bleBikeHandler.bikeData}\r\n\r\n");
-            ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
-
+            //Send($"Test/BikeData\r\n{bleBikeHandler.bikeData}\r\n\r\n");
+            //Send($"Test/BikeDataRPM\r\n{bleBikeHandler.bikeDataRPM}\r\n\r\n");
+            //ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
+            ChatLogListView.Items.Add($"{bleBikeHandler.bikeDataRPM}");
 
         }
 
@@ -115,7 +109,6 @@ namespace Client
             stream = client.GetStream();
             stream.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(OnRead), null);
             Send($"Test/login\r\n{this.patient.name}\r\n\r\n");
-
         }
 
         private static void Send(string v)
@@ -154,7 +147,6 @@ namespace Client
                     Console.WriteLine("Unknown package");
                     break;
             }
-
         }
 
         private async void LoadBikes()
@@ -167,17 +159,17 @@ namespace Client
         {
             this.bleBikeHandler = new BleBikeHandler();
             this.bleHeartHandler = new BleHeartHandler();
-
-
+            this.bleHeartHandler.InitBleHeart();
         }
 
-        private void ConnectBttn_Click(object sender, EventArgs e)
+        private async void ConnectBttn_Click(object sender, EventArgs e)
         {
             if (selectBike.SelectedItem != null)
             {
-                //bleHeartHandler.Connect("Decathlon Dual HR", "Heartrate");
-                bleBikeHandler.Connect(selectBike.SelectedItem.ToString(), "6e40fec1-b5a3-f393-e0a9-e50e24dcca9e"); 
-                
+                try { bleHeartHandler.Connect("Decathlon Dual HR", "Heartrate"); } catch (Exception f) { }
+                bleBikeHandler.Connect(selectBike.SelectedItem.ToString(), "6e40fec1-b5a3-f393-e0a9-e50e24dcca9e");
+                await bleHeartHandler.DataAsync();
+                await bleBikeHandler.DataAsync();
                 ConnectBttn.Enabled = false;
                 selectBike.Enabled = false;
                 connectStateLabel.Text = "Verbonden!";
@@ -193,7 +185,6 @@ namespace Client
             else
             {
                 connectStateLabel.Text = "Selecteer een fiets!";
-
             }
         }
 
@@ -211,7 +202,6 @@ namespace Client
                     int timeleft2 = 360 - time;
                     string totaltimeleft2 = TimeSpan.FromSeconds(timeleft2).ToString(@"mm\:ss");
                     TestTimer.Text = $"{totaltimeleft2} min";
-
                     break;
                 case 2:
                     TestTimer.Text = "00:00 min";
@@ -228,13 +218,11 @@ namespace Client
             if (seconds < 120)
             {
                 state = 0;
-
-                getData();
+                getData();          
             }
             if (seconds >= 120 && seconds < 360)
             {
                 state = 1;
-                
                 getData();
 
             }
@@ -250,7 +238,6 @@ namespace Client
                 CoolingDownTimer.Text = "00:00 min";
 
             }
-
         }
 
         private void StartBttn_Click(object sender, EventArgs e)
@@ -261,7 +248,6 @@ namespace Client
             ChatLogListView.Items.Add("Warming up...");
             running = true;
             StartBttn.Enabled = false;
-
         }
 
         void timer_Tick(object sender, EventArgs e)
@@ -269,7 +255,99 @@ namespace Client
             time++;
             CheckFase();
             UpdateTimers();
+            Hearthrate.Add(new ObservableValue(Convert.ToDouble(bleHeartHandler.heartData)));
+            RMP.Add(new ObservableValue(Convert.ToDouble(bleBikeHandler.bikeDataRPM)+10));
         }
 
+        private void resistanceChart_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
+        {
+                    
+        }
+
+        private double calculateVo2(double workload, double HRss, Patient patient)
+        {
+            double VO2max = 0;
+            if (patient.gender.Equals("Vrouw"))
+            {
+                VO2max = (0.00193 * workload + 0.326) / (0.769 * HRss - 56.1) * 100;
+            }
+            else
+            {
+                VO2max = (0.00212 * workload + 0.299) / (0.769 * HRss - 48.5) * 100;
+            }
+
+            if (patient.age >= 30)
+            {
+                if (patient.age < 35)
+                {
+                    VO2max *= 1;
+                }
+                else if (patient.age < 40)
+                {
+                    VO2max *= 0.87;
+                }
+                else if (patient.age < 45)
+                {
+                    VO2max *= 0.83;
+                }
+                else if (patient.age < 50)
+                {
+                    VO2max *= 0.78;
+                }
+                else if (patient.age < 55)
+                {
+                    VO2max *= 0.75;
+                }
+                else if (patient.age < 60)
+                {
+                    VO2max *= 0.71;
+                }
+                else if (patient.age < 65)
+                {
+                    VO2max *= 0.68;
+                }
+                else
+                {
+                    VO2max *= 0.65;
+                }
+            }
+             
+            if (patient.maxheartbeat > 0)
+            {
+                if (patient.maxheartbeat >= 210)
+                {
+                    VO2max *= 1.12;
+                }
+                else if (patient.maxheartbeat >= 200)
+                {
+                    VO2max *= 1;
+                }
+                else if (patient.maxheartbeat >= 190)
+                {
+                    VO2max *= 0.93;
+                }
+                else if (patient.maxheartbeat >= 180)
+                {
+                    VO2max *= 0.83;
+                }
+                else if (patient.maxheartbeat >= 170)
+                {
+                    VO2max *= 0.75;
+                }
+                else if (patient.maxheartbeat >= 160)
+                {
+                    VO2max *= 0.69;
+                }
+                else if (patient.maxheartbeat >= 150)
+                {
+                    VO2max *= 10.64;
+                }
+                else
+                {
+                    return VO2max;
+                }
+            }
+            return VO2max;
+        }
     }
 }

@@ -12,14 +12,12 @@ namespace Server
     {
         static void Main(string[] args)
         {
-
             new Program();
         }
 
         TcpListener listener;
         private List<Client> clients = new List<Client>();
-
-
+        
         Program()
         {
             // make a host and start host
