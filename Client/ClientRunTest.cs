@@ -25,6 +25,7 @@ namespace Client
 
         private List<string> bleBikeList;
         private List<string> bleHeartList;
+        private List<string> bleRMPList;
 
         private TcpClient client;
 
@@ -36,13 +37,13 @@ namespace Client
         private static byte[] buffer = new byte[1024];
         static string totalBuffer = "";
         private ChartValues<ObservableValue> Hearthrate;
-        private ChartValues<ObservableValue> RMP;
+        private ChartValues<ObservableValue> RPM;
 
         public ClientRunTest(Patient patient)
         {
             this.patient = patient;
             this.Hearthrate = new ChartValues<ObservableValue>();
-            this.RMP = new ChartValues<ObservableValue>();
+            this.RPM = new ChartValues<ObservableValue>();
             InitializeComponent();
             ConnectServer();
             InitializeDeclarations();
@@ -57,7 +58,7 @@ namespace Client
             dataChart.AxisY.Add(new Axis
             {
                 Foreground = System.Windows.Media.Brushes.Red,
-                Title = "BPM"
+                Title = "Beats per minute"
             });
 
             dataChart.AxisY.Add(new Axis
@@ -71,13 +72,13 @@ namespace Client
             {
                 new LineSeries
                 {
-                    Values = Hearthrate,              
-                    PointGeometrySize = 15
+                    Values = RPM,              
+                    PointGeometrySize = 10
                 },
                 new LineSeries
                 {
-                    Values = RMP,
-                    PointGeometrySize = 15
+                    Values = Hearthrate,
+                    PointGeometrySize = 10
                 },
 
             };
@@ -87,17 +88,22 @@ namespace Client
         {
             await bleBikeHandler.DataAsync();
             //bleBikeList.Add(bleBikeHandler.bikeData);
-            bleBikeList.Add(bleBikeHandler.bikeDataRPM);
-            if (bleHeartHandler.heartData != null) 
+            if (bleBikeHandler.bikeDataRPM != null)
             {
+                if (bleRMPList == null) bleRMPList = new List<String>();
+                bleRMPList.Add(bleBikeHandler.bikeDataRPM);
+            }
+            if (bleHeartHandler.heartData != null)
+            {
+                if (bleHeartList == null) bleHeartList = new List<String>();
                 bleHeartList.Add(bleHeartHandler.heartData);
             }
             resistanceChart.Value = bleBikeHandler.percent;
-            resistanceChart.Value = random.Next(0, 100);
+            //resistanceChart.Value = random.Next(0, 100);
             //Send($"Test/BikeData\r\n{bleBikeHandler.bikeData}\r\n\r\n");
             //Send($"Test/BikeDataRPM\r\n{bleBikeHandler.bikeDataRPM}\r\n\r\n");
             //ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
-            ChatLogListView.Items.Add($"{bleBikeHandler.bikeDataRPM}");
+            //ChatLogListView.Items.Add($"{bleBikeHandler.bikeDataRPM}");
 
         }
 
@@ -105,7 +111,6 @@ namespace Client
         {
             client = new TcpClient();
             client.Connect("localhost", 80);
-
             stream = client.GetStream();
             stream.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(OnRead), null);
             Send($"Test/login\r\n{this.patient.name}\r\n\r\n");
@@ -193,22 +198,42 @@ namespace Client
             switch (state)
             {
                 case 0:
+                    ChatLogListView.Items.Add("Astrand test starting...");
                     int timeleft1 = 120 - time;
                     string totaltimeleft = TimeSpan.FromSeconds(timeleft1).ToString(@"mm\:ss");
                     WarmingUpTimer.Text = $"{totaltimeleft} min";
+                    bleBikeHandler.ChangeResistance(30);
+
                     break;
                 case 1:
                     WarmingUpTimer.Text = "00:00 min";
+                    
                     int timeleft2 = 360 - time;
                     string totaltimeleft2 = TimeSpan.FromSeconds(timeleft2).ToString(@"mm\:ss");
                     TestTimer.Text = $"{totaltimeleft2} min";
+
+                    if (Convert.ToDouble(bleHeartHandler.heartData) > 140)
+                    {
+                        bleBikeHandler.ChangeResistance(40);
+                    }
+                    else if (Convert.ToDouble(bleHeartHandler.heartData) < 110)
+                    {
+                        bleBikeHandler.ChangeResistance(60);
+                    }
+                    else
+                    {
+                        bleBikeHandler.ChangeResistance(50);
+                    }
+
                     break;
                 case 2:
                     TestTimer.Text = "00:00 min";
                     int timeleft3 = 420 - time;
                     string totaltimeleft3 = TimeSpan.FromSeconds(timeleft3).ToString(@"mm\:ss");
                     CoolingDownTimer.Text = $"{totaltimeleft3} min";
-                    break;
+
+                    bleBikeHandler.ChangeResistance(20);
+                    break;  
             }
         }
 
@@ -224,6 +249,7 @@ namespace Client
             {
                 state = 1;
                 getData();
+                
 
             }
             if (seconds == 360)
@@ -256,12 +282,12 @@ namespace Client
             CheckFase();
             UpdateTimers();
             Hearthrate.Add(new ObservableValue(Convert.ToDouble(bleHeartHandler.heartData)));
-            RMP.Add(new ObservableValue(Convert.ToDouble(bleBikeHandler.bikeDataRPM)+10));
+            RPM.Add(new ObservableValue(Convert.ToDouble(bleBikeHandler.bikeDataRPM)));
         }
 
         private void resistanceChart_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
         {
-                    
+                     
         }
 
         private double calculateVo2(double workload, double HRss, Patient patient)

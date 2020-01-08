@@ -13,6 +13,7 @@ namespace ClientGUI.Bluetooth
         public BLE bleBike { get; private set; }
         public string bikeData { get; set; }
         public string bikeDataRPM { get; set; }
+        public string bikeDataWatt { get; set; }
 
         public event SubscriptionHandler SubscriptionValueChanged;
         public delegate void SubscriptionHandler(BLESubscriptionValueChangedEventArgs args);      
@@ -74,8 +75,9 @@ namespace ClientGUI.Bluetooth
         {
             if (e.Data[4] == 0x19)
             {
-                bikeData = $"{e.Data[6]}";
-                bikeDataRPM = $"{e.Data[2]}";
+                //bikeData = $"{e.Data[6]}";
+                bikeDataRPM = $"{e.Data[6]}";
+
                 int updateEventCount = e.Data[1]; // Update Event Count.
                 int instanteousCadence = e.Data[2]; // Rounds Per Minute.
                 byte accumulatedPowerLSB = e.Data[3]; // Least Significant Bit.
