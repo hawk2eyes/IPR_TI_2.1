@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
@@ -55,6 +54,7 @@ namespace Server
                 case "Test/login":
                     Console.WriteLine($"{data[1]} logged in");
                     this.name = data[1];
+                    addPatient(data[1], data[2], data[3], data[4]);
                     break;
                 case "Test/Connected":
                     Console.WriteLine($"{name} is connected to {data[1]}");
@@ -73,6 +73,13 @@ namespace Server
         {
             stream.Write(System.Text.Encoding.ASCII.GetBytes(v), 0, v.Length);
             stream.Flush();
+        }
+
+        private void addPatient(string name, string age, string weight, string gender)
+        {
+            Patient p = new Patient(name, Convert.ToInt32(age), Convert.ToInt32(weight), gender);
+           
+
         }
     }
 }
