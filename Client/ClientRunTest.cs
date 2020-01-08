@@ -83,24 +83,6 @@ namespace Client
             };
         }
 
-        private async void getData()
-        {
-            await bleBikeHandler.DataAsync();
-            //bleBikeList.Add(bleBikeHandler.bikeData);
-            bleBikeList.Add(bleBikeHandler.bikeDataRPM);
-            if (bleHeartHandler.heartData != null) 
-            {
-                bleHeartList.Add(bleHeartHandler.heartData);
-            }
-            resistanceChart.Value = bleBikeHandler.percent;
-            resistanceChart.Value = random.Next(0, 100);
-            //Send($"Test/BikeData\r\n{bleBikeHandler.bikeData}\r\n\r\n");
-            //Send($"Test/BikeDataRPM\r\n{bleBikeHandler.bikeDataRPM}\r\n\r\n");
-            //ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
-            ChatLogListView.Items.Add($"{bleBikeHandler.bikeDataRPM}");
-
-        }
-
         private void ConnectServer()
         {
             client = new TcpClient();
@@ -108,7 +90,7 @@ namespace Client
 
             stream = client.GetStream();
             stream.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(OnRead), null);
-            Send($"Test/login\r\n{this.patient.name}\r\n\r\n");
+            Send($"Test/login\r\n{this.patient.name}\r\n{this.patient.age}\r\n{this.patient.weight}\r\n{this.patient.gender}\r\n\r\n");
         }
 
         private static void Send(string v)
@@ -236,8 +218,36 @@ namespace Client
                 timer.Stop();
                 DoneMessageLabel.Visible = true;
                 CoolingDownTimer.Text = "00:00 min";
+            }
+        }
+
+       
+       
+
+        private async void getData()
+        {
+            await bleBikeHandler.DataAsync();
+            //bleBikeList.Add(bleBikeHandler.bikeData);
+            bleBikeList.Add(bleBikeHandler.bikeDataRPM);
+            if (bleHeartHandler.heartData != null)
+            {
+                bleHeartList.Add(bleHeartHandler.heartData);
+                if (time % 15 == 0)
+                {
+                    String addedData = $"{bleBikeHandler.bikeData}-{bleBikeHandler.bikeDataRPM}-{bleHeartHandler.heartData}";
+
+                    Send($"Test/BikeData\r\n{this.patient.name}\r\n{this.patient.age}\r\n{this.patient.weight}\r\n{this.patient.gender}\r\n{addedData}\r\n\r\n");
+                    
+                }
 
             }
+            resistanceChart.Value = bleBikeHandler.percent;
+            //resistanceChart.Value = random.Next(0, 100);
+            //Send($"Test/BikeData\r\n{bleBikeHandler.bikeData}\r\n\r\n");
+            //Send($"Test/BikeDataRPM\r\n{bleBikeHandler.bikeDataRPM}\r\n\r\n");
+            //ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
+            ChatLogListView.Items.Add($"{bleBikeHandler.bikeDataRPM}");
+
         }
 
         private void StartBttn_Click(object sender, EventArgs e)

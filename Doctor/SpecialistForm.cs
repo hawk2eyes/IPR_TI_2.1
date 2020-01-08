@@ -12,22 +12,21 @@ using System.Windows.Forms;
 
 namespace Doctor
 {
-    public partial class DoctorForm : Form
+    public partial class SpecialistForm : Form
     {
         private int port;
-        private string name;
         private TcpClient client;
 
         private static NetworkStream stream;
         private static byte[] buffer = new byte[1024];
         static string totalBuffer = "";
 
-        public DoctorForm()
+        public SpecialistForm()
         {
             InitializeComponent();
             ConnectServer();
         }
-
+        
         private void ConnectServer()
         {
             client = new TcpClient();
@@ -48,7 +47,7 @@ namespace Doctor
         private void OnRead(IAsyncResult ar)
         {
             //message received
-            Console.WriteLine($"client: {name} got data");
+            Console.WriteLine($"Specialist: got data");
             int receivedBytes = stream.EndRead(ar);
             totalBuffer += System.Text.Encoding.ASCII.GetString(buffer, 0, receivedBytes);
 

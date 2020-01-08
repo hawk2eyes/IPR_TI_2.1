@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{6278B1C1-ECEF-4977-9EBF-65750BAA7A5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Doctor", "Doctor\Doctor.csproj", "{8CBCA9B9-EAB0-4672-B286-7F8D8397CF60}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Specialist", "Doctor\Specialist.csproj", "{8CBCA9B9-EAB0-4672-B286-7F8D8397CF60}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{EF0F4639-9A27-42D9-A6DD-ED583025E368}"
 EndProject
