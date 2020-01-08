@@ -77,6 +77,7 @@ namespace ClientGUI.Bluetooth
             {
                 //bikeData = $"{e.Data[6]}";
                 bikeDataRPM = $"{e.Data[6]}";
+                bikeDataWatt = $"{workload}";
 
                 int updateEventCount = e.Data[1]; // Update Event Count.
                 int instanteousCadence = e.Data[2]; // Rounds Per Minute.

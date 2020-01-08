@@ -104,6 +104,14 @@ namespace Client
             //Send($"Test/BikeDataRPM\r\n{bleBikeHandler.bikeDataRPM}\r\n\r\n");
             //ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
             //ChatLogListView.Items.Add($"{bleBikeHandler.bikeDataRPM}");
+            if (time % 15 == 0)
+            {
+                String addedData = $"{bleBikeHandler.bikeData}-{bleBikeHandler.bikeDataRPM}-{bleHeartHandler.heartData}";
+
+                Send($"Test/BikeData\r\n{this.patient.name}\r\n{this.patient.age}\r\n{this.patient.weight}\r\n{this.patient.gender}\r\n{addedData}\r\n\r\n");
+
+            }
+
 
         }
 
@@ -198,11 +206,17 @@ namespace Client
             switch (state)
             {
                 case 0:
-                    ChatLogListView.Items.Add("Astrand test starting...");
+                    //ChatLogListView.Items.Add("Astrand test starting...");
                     int timeleft1 = 120 - time;
                     string totaltimeleft = TimeSpan.FromSeconds(timeleft1).ToString(@"mm\:ss");
                     WarmingUpTimer.Text = $"{totaltimeleft} min";
                     bleBikeHandler.ChangeResistance(30);
+
+                    if (Convert.ToDouble(bleHeartHandler.heartData) > 160)
+                    {
+                        bleBikeHandler.ChangeResistance(0);
+                        StopLabel.Visible = true;
+                    }
 
                     break;
                 case 1:
@@ -212,17 +226,56 @@ namespace Client
                     string totaltimeleft2 = TimeSpan.FromSeconds(timeleft2).ToString(@"mm\:ss");
                     TestTimer.Text = $"{totaltimeleft2} min";
 
+                    if (Convert.ToDouble(bleHeartHandler.heartData) > 160) 
+                    {
+                        bleBikeHandler.ChangeResistance(0);
+                        StopLabel.Visible = true;
+                    }
+
                     if (Convert.ToDouble(bleHeartHandler.heartData) > 140)
                     {
-                        bleBikeHandler.ChangeResistance(40);
+                        if (bleBikeHandler.percent < 40)
+                        {
+                            bleBikeHandler.ChangeResistance(bleBikeHandler.percent + 1);
+                        }
+                        else if (bleBikeHandler.percent > 40)
+                        {
+                            bleBikeHandler.ChangeResistance(bleBikeHandler.percent - 1);
+                        }
+                        else 
+                        {
+                            bleBikeHandler.ChangeResistance(40);
+                        }
                     }
-                    else if (Convert.ToDouble(bleHeartHandler.heartData) < 110)
+                    else if (Convert.ToDouble(bleHeartHandler.heartData) < 120)
                     {
-                        bleBikeHandler.ChangeResistance(60);
+                        if (bleBikeHandler.percent < 60)
+                        {
+                            bleBikeHandler.ChangeResistance(bleBikeHandler.percent + 1);
+                        }
+                        else if (bleBikeHandler.percent > 60)
+                        {
+                            bleBikeHandler.ChangeResistance(bleBikeHandler.percent - 1);
+                        }
+                        else
+                        {
+                            bleBikeHandler.ChangeResistance(60);
+                        }
                     }
                     else
                     {
-                        bleBikeHandler.ChangeResistance(50);
+                        if (bleBikeHandler.percent < 50)
+                        {
+                            bleBikeHandler.ChangeResistance(bleBikeHandler.percent + 1);
+                        }
+                        else if (bleBikeHandler.percent > 50)
+                        {
+                            bleBikeHandler.ChangeResistance(bleBikeHandler.percent - 1);
+                        }
+                        else
+                        {
+                            bleBikeHandler.ChangeResistance(50);
+                        }
                     }
 
                     break;
@@ -231,6 +284,12 @@ namespace Client
                     int timeleft3 = 420 - time;
                     string totaltimeleft3 = TimeSpan.FromSeconds(timeleft3).ToString(@"mm\:ss");
                     CoolingDownTimer.Text = $"{totaltimeleft3} min";
+
+                    if (Convert.ToDouble(bleHeartHandler.heartData) > 160)
+                    {
+                        bleBikeHandler.ChangeResistance(0);
+                        StopLabel.Visible = true;
+                    }
 
                     bleBikeHandler.ChangeResistance(20);
                     break;  
@@ -249,8 +308,6 @@ namespace Client
             {
                 state = 1;
                 getData();
-                
-
             }
             if (seconds == 360)
             {
@@ -261,38 +318,36 @@ namespace Client
                 running = false;
                 timer.Stop();
                 DoneMessageLabel.Visible = true;
+                VO2Label.Visible = true;
+                VO2Label.Text = "VO2 max = " + $"{calculateVo2(bleBikeHandler.workload, Convert.ToDouble(bleHeartHandler.heartData),patient)}";
                 CoolingDownTimer.Text = "00:00 min";
             }
         }
+        //private async void getData()
+        //{
+        //    await bleBikeHandler.DataAsync();
+        //    //bleBikeList.Add(bleBikeHandler.bikeData);
+        //    bleBikeList.Add(bleBikeHandler.bikeDataRPM);
+        //    if (bleHeartHandler.heartData != null)
+        //    {
+        //        bleHeartList.Add(bleHeartHandler.heartData);
+        //        if (time % 15 == 0)
+        //        {
+        //            String addedData = $"{bleBikeHandler.bikeData}-{bleBikeHandler.bikeDataRPM}-{bleHeartHandler.heartData}";
 
-       
-       
-
-        private async void getData()
-        {
-            await bleBikeHandler.DataAsync();
-            //bleBikeList.Add(bleBikeHandler.bikeData);
-            bleBikeList.Add(bleBikeHandler.bikeDataRPM);
-            if (bleHeartHandler.heartData != null)
-            {
-                bleHeartList.Add(bleHeartHandler.heartData);
-                if (time % 15 == 0)
-                {
-                    String addedData = $"{bleBikeHandler.bikeData}-{bleBikeHandler.bikeDataRPM}-{bleHeartHandler.heartData}";
-
-                    Send($"Test/BikeData\r\n{this.patient.name}\r\n{this.patient.age}\r\n{this.patient.weight}\r\n{this.patient.gender}\r\n{addedData}\r\n\r\n");
+        //            Send($"Test/BikeData\r\n{this.patient.name}\r\n{this.patient.age}\r\n{this.patient.weight}\r\n{this.patient.gender}\r\n{addedData}\r\n\r\n");
                     
-                }
+        //        }
 
-            }
-            resistanceChart.Value = bleBikeHandler.percent;
-            //resistanceChart.Value = random.Next(0, 100);
-            //Send($"Test/BikeData\r\n{bleBikeHandler.bikeData}\r\n\r\n");
-            //Send($"Test/BikeDataRPM\r\n{bleBikeHandler.bikeDataRPM}\r\n\r\n");
-            //ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
-            ChatLogListView.Items.Add($"{bleBikeHandler.bikeDataRPM}");
+        //    }
+        //    resistanceChart.Value = bleBikeHandler.percent;
+        //    //resistanceChart.Value = random.Next(0, 100);
+        //    //Send($"Test/BikeData\r\n{bleBikeHandler.bikeData}\r\n\r\n");
+        //    //Send($"Test/BikeDataRPM\r\n{bleBikeHandler.bikeDataRPM}\r\n\r\n");
+        //    //ChatLogListView.Items.Add($"{bleBikeHandler.bikeData}");
+        //    ChatLogListView.Items.Add($"{bleBikeHandler.bikeDataRPM}");
 
-        }
+        //}
 
         private void StartBttn_Click(object sender, EventArgs e)
         {
@@ -317,7 +372,6 @@ namespace Client
         {
                      
         }
-
         private double calculateVo2(double workload, double HRss, Patient patient)
         {
             double VO2max = 0;
@@ -402,6 +456,11 @@ namespace Client
                 }
             }
             return VO2max;
+        }
+
+        private void DoneMessageLabel_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

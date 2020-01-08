@@ -45,6 +45,8 @@
             this.TestTimer = new System.Windows.Forms.Label();
             this.CoolingDownTimer = new System.Windows.Forms.Label();
             this.DoneMessageLabel = new System.Windows.Forms.Label();
+            this.VO2Label = new System.Windows.Forms.Label();
+            this.StopLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // selectBike
@@ -226,6 +228,30 @@
             this.DoneMessageLabel.TabIndex = 27;
             this.DoneMessageLabel.Text = "De test is afgerond.";
             this.DoneMessageLabel.Visible = false;
+            this.DoneMessageLabel.Click += new System.EventHandler(this.DoneMessageLabel_Click);
+            // 
+            // VO2Label
+            // 
+            this.VO2Label.AutoSize = true;
+            this.VO2Label.Font = new System.Drawing.Font("Microsoft YaHei UI", 12F, System.Drawing.FontStyle.Bold);
+            this.VO2Label.Location = new System.Drawing.Point(19, 330);
+            this.VO2Label.Name = "VO2Label";
+            this.VO2Label.Size = new System.Drawing.Size(101, 22);
+            this.VO2Label.TabIndex = 28;
+            this.VO2Label.Text = "VO2 = 5.23";
+            this.VO2Label.Visible = false;
+            // 
+            // StopLabel
+            // 
+            this.StopLabel.BackColor = System.Drawing.Color.Red;
+            this.StopLabel.Font = new System.Drawing.Font("Microsoft YaHei UI", 12F, System.Drawing.FontStyle.Bold);
+            this.StopLabel.Location = new System.Drawing.Point(476, 229);
+            this.StopLabel.Name = "StopLabel";
+            this.StopLabel.Size = new System.Drawing.Size(200, 200);
+            this.StopLabel.TabIndex = 29;
+            this.StopLabel.Text = "STOP NU!";
+            this.StopLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.StopLabel.Visible = false;
             // 
             // ClientRunTest
             // 
@@ -233,6 +259,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(1252, 673);
+            this.Controls.Add(this.StopLabel);
+            this.Controls.Add(this.VO2Label);
             this.Controls.Add(this.DoneMessageLabel);
             this.Controls.Add(this.CoolingDownTimer);
             this.Controls.Add(this.TestTimer);
@@ -279,5 +307,7 @@
         private System.Windows.Forms.Label TestTimer;
         private System.Windows.Forms.Label CoolingDownTimer;
         private System.Windows.Forms.Label DoneMessageLabel;
+        private System.Windows.Forms.Label VO2Label;
+        private System.Windows.Forms.Label StopLabel;
     }
 }
